@@ -36,8 +36,18 @@ I have fully implemented the AI Chat Web App from scratch, incorporating all the
 
 You need to run three separate services to fully use the application.
 
-### 1. Start Ollama
-Ensure you have the Ollama app running on your machine and that you have pulled at least one model (e.g., `ollama run llama3`).
+### 1. Install Ollama & Models
+If you haven't already, you need to install Ollama and download the models:
+1. Download and install Ollama for Windows from [ollama.com](https://ollama.com/download).
+2. Open a PowerShell terminal and run the following commands to download the models:
+   ```powershell
+   ollama pull llama3
+   ollama pull llava
+   ```
+   *(Note: `llama3` is the default text model, and `llava` is the vision model required for direct image understanding).*
+
+### 2. Start Ollama
+Ensure you have the Ollama app running in the background on your machine.
 
 ### 2. Start the Backend
 Open a new PowerShell terminal and run:

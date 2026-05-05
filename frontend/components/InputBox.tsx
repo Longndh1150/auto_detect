@@ -3,6 +3,8 @@ import { useChatStore } from '../store/chatStore';
 import { v4 as uuidv4 } from 'uuid';
 import { Paperclip, Send, X, Loader2 } from 'lucide-react';
 
+const VISION_MODELS = ["llava", "bakllava"];
+
 export const InputBox = () => {
   const [input, setInput] = useState('');
   const [isUploading, setIsUploading] = useState(false);
@@ -17,6 +19,9 @@ export const InputBox = () => {
     fileIds, 
     addFileId, 
     clearFileIds,
+    visionImages,
+    addVisionImage,
+    clearVisionImages,
     setStreaming,
     isStreaming
   } = useChatStore();
@@ -34,6 +39,7 @@ export const InputBox = () => {
       id: uuidv4(),
       role: 'user' as const,
       content: input,
+      images: visionImages.length > 0 ? visionImages : undefined,
     };
     
     const assistantMessageId = uuidv4();
@@ -50,12 +56,12 @@ export const InputBox = () => {
     setUploadError('');
 
     try {
-      const response = await fetch('http://localhost:8000/chat', {
+      const response = await fetch('http://127.0.0.1:8000/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           model: selectedModel,
-          messages: [...messages, userMessage].map(m => ({ role: m.role, content: m.content })),
+          messages: [...messages, userMessage].map(m => ({ role: m.role, content: m.content, images: m.images })),
           file_ids: fileIds,
         }),
       });
@@ -78,6 +84,7 @@ export const InputBox = () => {
       
       // Clear files after successful send
       clearFileIds();
+      clearVisionImages();
       setUploadedFiles([]);
     } catch (error) {
       console.error(error);
@@ -94,11 +101,31 @@ export const InputBox = () => {
     setIsUploading(true);
     setUploadError('');
 
+    const isVisionModel = VISION_MODELS.some(v => selectedModel.toLowerCase().includes(v));
+
+    if (isVisionModel && file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const base64Data = (event.target?.result as string).split(',')[1];
+        addVisionImage(base64Data);
+        setUploadedFiles(prev => [...prev, { id: uuidv4(), name: file.name }]);
+        setIsUploading(false);
+        if (fileInputRef.current) fileInputRef.current.value = '';
+      };
+      reader.onerror = () => {
+        setUploadError('Failed to read image file');
+        setIsUploading(false);
+        if (fileInputRef.current) fileInputRef.current.value = '';
+      };
+      reader.readAsDataURL(file);
+      return;
+    }
+
     const formData = new FormData();
     formData.append('file', file);
 
     try {
-      const response = await fetch('http://localhost:8000/upload', {
+      const response = await fetch('http://127.0.0.1:8000/upload', {
         method: 'POST',
         body: formData,
       });

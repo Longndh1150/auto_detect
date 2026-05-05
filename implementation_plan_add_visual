@@ -1,0 +1,43 @@
+# Add Vision Model Support for Ollama
+
+This plan outlines the changes required to support vision models (e.g., `llava`, `bakllava`) for image understanding, while preserving the existing OCR fallback flow for non-vision models.
+
+## Proposed Changes
+
+### Backend API Updates
+
+#### [MODIFY] `backend/routes/chat.py`
+- Update the Pydantic `Message` model to accept an optional `images` field (List of strings).
+- When parsing `request.messages` into `messages_dicts`, check if `msg.images` exists and include it in the dictionary. This ensures the raw base64 data is forwarded correctly to Ollama.
+
+### Frontend Updates
+
+#### [MODIFY] `frontend/store/chatStore.ts`
+- Add an optional `images?: string[]` field to the `Message` interface so the store can preserve image state if needed.
+- Add `visionImages: string[]` to the state to store the base64 strings of uploaded images locally before sending.
+- Add `addVisionImage(base64: string)` and `clearVisionImages()` actions.
+
+#### [MODIFY] `frontend/components/InputBox.tsx`
+- Define `VISION_MODELS = ["llava", "bakllava"]`.
+- Update the `handleFileUpload` function:
+  - Check if `VISION_MODELS.some(v => selectedModel.toLowerCase().includes(v))` AND the file is an image (`file.type.startsWith('image/')`).
+  - If **true** (vision flow):
+    - Use `FileReader` to read the image as a Data URL.
+    - Extract the base64 part (remove `data:image/...;base64,`).
+    - Add it to `visionImages` in the store.
+    - Add it to `uploadedFiles` locally (using a temporary uuid as `id`) so the UI displays the file name pill.
+  - If **false** (fallback/text flow):
+    - Proceed with the existing `fetch('http://127.0.0.1:8000/upload')` flow, calling `addFileId` on success.
+- Update `handleSend`:
+  - When constructing the `userMessage`, include `images: visionImages.length > 0 ? visionImages : undefined`.
+  - Pass the updated `userMessage` with base64 data to the `/chat` API.
+  - Call `clearVisionImages()` after a successful send to reset the upload state.
+
+## Verification Plan
+
+### Automated Tests
+- No automated tests added, relying on manual verification with the provided `test_api.py`.
+
+### Manual Verification
+1. **Vision Flow:** Select `llava` in the UI. Upload a PNG/JPG. Ensure `/upload` is *not* hit, and the base64 data is sent to `/chat`. Confirm the AI describes the image.
+2. **Fallback Flow:** Select `llama3` (or any non-vision model). Upload a PNG/JPG. Ensure `/upload` *is* hit, OCR extracts text, and the `file_id` is sent to `/chat`. Confirm the AI sees the text content of the image.

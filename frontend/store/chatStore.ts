@@ -4,6 +4,7 @@ export interface Message {
   id: string;
   role: 'user' | 'assistant';
   content: string;
+  images?: string[];
 }
 
 interface ChatState {
@@ -11,6 +12,7 @@ interface ChatState {
   models: string[];
   selectedModel: string;
   fileIds: string[];
+  visionImages: string[];
   isStreaming: boolean;
   addMessage: (msg: Message) => void;
   updateLastMessage: (chunk: string) => void;
@@ -18,6 +20,8 @@ interface ChatState {
   setSelectedModel: (model: string) => void;
   addFileId: (id: string) => void;
   clearFileIds: () => void;
+  addVisionImage: (base64: string) => void;
+  clearVisionImages: () => void;
   setStreaming: (isStreaming: boolean) => void;
 }
 
@@ -26,6 +30,7 @@ export const useChatStore = create<ChatState>((set) => ({
   models: [],
   selectedModel: '',
   fileIds: [],
+  visionImages: [],
   isStreaming: false,
   
   addMessage: (msg) => set((state) => ({ messages: [...state.messages, msg] })),
@@ -42,5 +47,7 @@ export const useChatStore = create<ChatState>((set) => ({
   setSelectedModel: (model) => set({ selectedModel: model }),
   addFileId: (id) => set((state) => ({ fileIds: [...state.fileIds, id] })),
   clearFileIds: () => set({ fileIds: [] }),
+  addVisionImage: (base64) => set((state) => ({ visionImages: [...state.visionImages, base64] })),
+  clearVisionImages: () => set({ visionImages: [] }),
   setStreaming: (isStreaming) => set({ isStreaming }),
 }));

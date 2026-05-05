@@ -9,7 +9,7 @@ export const Sidebar = () => {
   useEffect(() => {
     const fetchModels = async () => {
       try {
-        const res = await fetch('http://localhost:8000/models');
+        const res = await fetch('http://127.0.0.1:8000/models');
         if (!res.ok) throw new Error('Failed to fetch models');
         const data = await res.json();
         setModels(data.models);

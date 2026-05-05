@@ -10,6 +10,7 @@ router = APIRouter()
 class Message(BaseModel):
     role: str
     content: str
+    images: Optional[List[str]] = None
 
 class ChatRequest(BaseModel):
     model: str
@@ -26,7 +27,12 @@ async def chat(request: ChatRequest):
     if not request.messages:
         raise HTTPException(status_code=400, detail="Messages array cannot be empty")
         
-    messages_dicts = [{"role": msg.role, "content": msg.content} for msg in request.messages]
+    messages_dicts = []
+    for msg in request.messages:
+        msg_dict = {"role": msg.role, "content": msg.content}
+        if msg.images:
+            msg_dict["images"] = msg.images
+        messages_dicts.append(msg_dict)
     
     # Inject file context if provided
     if request.file_ids:
