@@ -1,0 +1,22 @@
+# AI Chat Web App Tasks
+
+- `[/]` Backend Implementation
+  - `[x]` Create virtual environment and install dependencies
+  - `[x]` Implement `file_parser.py` (PDF, DOCX, Image OCR)
+  - `[x]` Implement in-memory store for file texts
+  - `[x]` Implement `ollama.py` service
+  - `[x]` Implement `upload.py` route
+  - `[x]` Implement `chat.py` route
+  - `[x]` Implement `main.py`
+- `[x]` Frontend Implementation
+  - `[x]` Initialize Next.js project
+  - `[x]` Install dependencies (Zustand, Markdown, etc.)
+  - `[x]` Setup Zustand store
+  - `[x]` Implement `Sidebar` (model selection)
+  - `[x]` Implement `InputBox` (chat input, file upload)
+  - `[x]` Implement `Message` (Markdown rendering, syntax highlighting)
+  - `[x]` Implement `Chat` (streaming logic, layout)
+- `[/]` Verification
+  - `[ ]` Verify Ollama connection
+  - `[ ]` Verify file upload and parsing
+  - `[ ]` Verify chat streaming and markdown rendering
